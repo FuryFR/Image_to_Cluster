@@ -16,7 +16,7 @@ build {
   sources = ["source.docker.nginx_custom"]
 
   provisioner "file" {
-    source      = "index.html"
+    source      = "../index.html"
     destination = "/usr/share/nginx/html/index.html"
   }
 
