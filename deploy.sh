@@ -25,6 +25,15 @@ log_error() {
 }
 
 # ==========================
+# 0) FIX PRÉALABLE (CRITIQUE)
+# ==========================
+# On désactive Yarn AVANT tout apt update car il casse les Codespaces
+if [ -f /etc/apt/sources.list.d/yarn.list ]; then
+    log_warning "Désactivation préventive du dépôt Yarn (clé GPG manquante)..."
+    sudo mv /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.list.disabled 2>/dev/null || true
+fi
+
+# ==========================
 # 1) Installation des dépendances système
 # ==========================
 log_info "Installation des dépendances système..."
@@ -50,14 +59,11 @@ curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash > /d
 log_success "k3d $(k3d version | grep 'k3d version' | awk '{print $3}') installé"
 
 # ==========================
-# 4) Fix du dépôt Yarn + installation de Packer
+# 4) Installation de Packer
 # ==========================
-log_info "Configuration du dépôt HashiCorp..."
+log_info "Configuration du dépôt HashiCorp pour Packer..."
 wget -qO - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
-
-log_warning "Désactivation du dépôt Yarn (clé GPG manquante)..."
-sudo mv /etc/apt/sources.list.d/yarn.list /etc/apt/sources.list.d/yarn.list.disabled 2>/dev/null || true
 
 log_info "Installation de Packer..."
 sudo apt-get update -qq
