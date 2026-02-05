@@ -1,0 +1,20 @@
+- name: Deploy nginx-custom to k3d lab
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
+
+  tasks:
+    - name: Apply Deployment
+      kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: "../k8s/deployment.yaml"
+
+    - name: Apply Service
+      kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: "../k8s/service.yaml"
